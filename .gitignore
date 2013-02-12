@@ -16,3 +16,6 @@ tmp
 .yardoc
 _yardoc
 doc/
+
+# Cloud9 Revisions
+.c9revisions/
