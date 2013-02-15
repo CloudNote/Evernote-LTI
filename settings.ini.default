@@ -1,0 +1,15 @@
+; This file must be copied or renamed to settings.ini and filled out
+; for the application to function.
+
+; Evernote API details
+[evernote]
+key = example
+secret = thisisanexamplesecret
+
+; Currently will only support PostgreSQL
+[database]
+host = example.com
+database = example
+port = 5432
+user = example
+password = example
