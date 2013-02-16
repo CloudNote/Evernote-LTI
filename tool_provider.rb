@@ -49,7 +49,7 @@ def authorize!
   # save the launch parameters for use in later request
   session['launch_params'] = @tp.to_params
 
-  @username = @tp.username("Dude")
+  @username = @tp.username("Anonymous")
 end
 
 # The url for launching the tool
