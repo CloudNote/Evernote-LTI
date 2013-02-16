@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'sinatra'
+gem 'postgres'
 gem 'ims-lti',   "~>1.0.2"
 gem 'oauth'
 gem 'ini'
