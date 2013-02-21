@@ -5,6 +5,8 @@ gem 'pg'
 gem 'ims-lti',   "~>1.0.2"
 gem 'oauth'
 gem 'ini'
+gem 'evernote-thrift'
+gem 'evernote_oauth'
 
 group :development do
   gem 'shotgun'
