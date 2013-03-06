@@ -27,7 +27,7 @@ dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["dbname"],
                     conninfo["db"]["user"],
                     conninfo["db"]["password"])
-                    
+
 def show_error(message)
   @message = message
   erb :error
@@ -119,8 +119,8 @@ end
 get '/tool_config.xml' do
   host = request.scheme + "://" + request.host_with_port
   url = host + "/lti_tool"
-  tc = IMS::LTI::ToolConfig.new(:title => "Example Sinatra Tool Provider", :launch_url => url)
-  tc.description = "This example LTI Tool Provider supports LIS Outcome pass-back."
+  tc = IMS::LTI::ToolConfig.new(:title => "Evernote LTI", :launch_url => url)
+  tc.description = "Evernote integration for the Canvas LMS"
   
   editor_params = { "editor_button": {  "selection_width": 600,
                                         "selection_height": 600,
