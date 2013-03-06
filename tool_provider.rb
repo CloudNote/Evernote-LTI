@@ -20,11 +20,13 @@ $oauth_creds = {"test" => "secret", "testing" => "supersecret"}
 conninfo = YAML.load_file('settings.yml')
 
 # connect to database
-dbconn = PG.connect(host=conninfo["db"]["host"],
-                    port=conninfo["db"]["port"],
-                    dbname=conninfo["db"]["dbname"],
-                    user=conninfo["db"]["user"],
-                    password=conninfo["db"]["password"])
+dbconn = PG.connect(conninfo["db"]["host"],
+                    conninfo["db"]["port"],
+                    nil, # options
+                    nil, # tty
+                    conninfo["db"]["dbname"],
+                    conninfo["db"]["user"],
+                    conninfo["db"]["password"])
 
 def show_error(message)
   @message = message
