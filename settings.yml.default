@@ -7,9 +7,9 @@ evernote:
   secret: thisisanexamplesecret
 
 # Currently will only support PostgreSQL
-database:
+db:
   host: example.com
-  database: example
+  dbname: example
   port: 5432
   user: example
   password: example

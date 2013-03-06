@@ -1,5 +1,8 @@
 require 'sinatra'
 require 'ims/lti'
+require 'pg'
+require 'yaml'
+require 'pp'
 # must include the oauth proxy object
 require 'oauth/request_proxy/rack_request'
 
@@ -12,6 +15,16 @@ end
 
 # the consumer keys/secrets
 $oauth_creds = {"test" => "secret", "testing" => "supersecret"}
+
+# load database and evernote API info
+conninfo = YAML.load_file('settings.yml')
+
+# connect to database
+dbconn = PG.connect(host=conninfo["db"]["host"],
+                    port=conninfo["db"]["port"],
+                    dbname=conninfo["db"]["dbname"],
+                    user=conninfo["db"]["user"],
+                    password=conninfo["db"]["password"])
 
 def show_error(message)
   @message = message
@@ -65,6 +78,13 @@ post '/lti_tool' do
     @tp.lti_msg = "Sorry that tool was so boring"
     erb :boring_tool
   end
+end
+
+post '/lti_tool_embed' do
+  authorize!
+  
+  # launch from an editor button
+  erb :embed
 end
 
 # post the assessment results
