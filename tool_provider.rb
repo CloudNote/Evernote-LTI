@@ -27,7 +27,7 @@ dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["dbname"],
                     conninfo["db"]["user"],
                     conninfo["db"]["password"])
-
+                    
 def show_error(message)
   @message = message
   erb :error
@@ -121,6 +121,12 @@ get '/tool_config.xml' do
   url = host + "/lti_tool"
   tc = IMS::LTI::ToolConfig.new(:title => "Example Sinatra Tool Provider", :launch_url => url)
   tc.description = "This example LTI Tool Provider supports LIS Outcome pass-back."
+  
+  editor_params = { "editor_button": {  "selection_width": 600,
+                                        "selection_height": 600,
+                                        "enabled": True } }
+  
+  tc.set_ext_params("canvas.instructure.com", editor_params)
 
   headers 'Content-Type' => 'text/xml'
   tc.to_xml(:indent => 2)
