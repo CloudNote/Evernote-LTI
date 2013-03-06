@@ -122,7 +122,8 @@ get '/tool_config.xml' do
   tc = IMS::LTI::ToolConfig.new(:title => "Evernote LTI", :launch_url => url)
   tc.description = "Evernote integration for the Canvas LMS"
   
-  editor_params = { "editor_button" => {  "selection_width" => 600, "selection_height" => 600, "enabled" => True } }
+  
+  editor_params = { :editor_button => {  :selection_width => 600, :selection_height => 600, :enabled => true } }
   
   tc.set_ext_params("canvas.instructure.com", editor_params)
 
