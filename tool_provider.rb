@@ -121,9 +121,24 @@ get '/tool_config.xml' do
   url = host + "/lti_tool"
   tc = IMS::LTI::ToolConfig.new(:title => "Evernote LTI", :launch_url => url)
   tc.description = "Evernote integration for the Canvas LMS"
+  tc.icon = "http://evernote.com/favicon.ico"
   
-  
-  editor_params = { :editor_button => {  :selection_width => 600, :selection_height => 600, :enabled => true } }
+  editor_params = { "tool_id" => "evernote",
+                    "privacy_level" => "anonymous",
+                    "editor_button" => 
+                    {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                        "icon_url" => "http://evernote.com/favicon.ico",
+                        "text" => "Evernote",
+                        "selection_width" => 600,
+                        "selection_height" => 600,
+                        "enabled" => true,  },
+                    "resource_selection" =>
+                    {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                        "icon_url" => "http://evernote.com/favicon.ico",
+                        "text" => "Evernote",
+                        "selection_width" => 600,
+                        "selection_height" => 600,
+                        "enabled" => true,  } }
   
   tc.set_ext_params("canvas.instructure.com", editor_params)
 
