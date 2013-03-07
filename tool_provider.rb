@@ -129,15 +129,15 @@ get '/tool_config.xml' do
                     {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
                         "icon_url" => "http://evernote.com/favicon.ico",
                         "text" => "Evernote",
-                        "selection_width" => 600,
-                        "selection_height" => 600,
+                        "selection_width" => 690,
+                        "selection_height" => 530,
                         "enabled" => true,  },
                     "resource_selection" =>
                     {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
                         "icon_url" => "http://evernote.com/favicon.ico",
                         "text" => "Evernote",
-                        "selection_width" => 600,
-                        "selection_height" => 600,
+                        "selection_width" => 690,
+                        "selection_height" => 530,
                         "enabled" => true,  } }
   
   tc.set_ext_params("canvas.instructure.com", editor_params)
