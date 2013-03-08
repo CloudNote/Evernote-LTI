@@ -5,6 +5,10 @@ require 'yaml'
 require 'pp'
 # must include the oauth proxy object
 require 'oauth/request_proxy/rack_request'
+# includes for evernote
+require 'oauth'
+require 'oauth/consumer'
+require 'evernote-thrift'
 
 enable :sessions
 set :protection, :except => :frame_options
@@ -121,20 +125,20 @@ get '/tool_config.xml' do
   url = host + "/lti_tool"
   tc = IMS::LTI::ToolConfig.new(:title => "Evernote LTI", :launch_url => url)
   tc.description = "Evernote integration for the Canvas LMS"
-  tc.icon = "http://evernote.com/favicon.ico"
+  tc.icon = "http://evernote.com/media/img/product_icons/evernote-25.png"
   
   editor_params = { "tool_id" => "evernote",
                     "privacy_level" => "anonymous",
                     "editor_button" => 
                     {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                        "icon_url" => "http://evernote.com/favicon.ico",
+                        "icon_url" => "http://evernote.com/media/img/product_icons/evernote-25.png",
                         "text" => "Evernote",
                         "selection_width" => 690,
                         "selection_height" => 530,
                         "enabled" => true,  },
                     "resource_selection" =>
                     {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                        "icon_url" => "http://evernote.com/favicon.ico",
+                        "icon_url" => "http://evernote.com/media/img/product_icons/evernote-25.png",
                         "text" => "Evernote",
                         "selection_width" => 690,
                         "selection_height" => 530,
