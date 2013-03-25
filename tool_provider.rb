@@ -31,6 +31,15 @@ dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["dbname"],
                     conninfo["db"]["user"],
                     conninfo["db"]["password"])
+                    
+# evernote server information
+# replace EVERNOTE_SERVER with https://www.evernote.com
+# to use production servers
+EVERNOTE_SERVER = "https://sandbox.evernote.com"
+REQUEST_TOKEN_URL = "#{EVERNOTE_SERVER}/oauth"
+ACCESS_TOKEN_URL = "#{EVERNOTE_SERVER}/oauth"
+AUTHORIZATION_URL = "#{EVERNOTE_SERVER}/OAuth.action"
+NOTESTORE_URL_BASE = "#{EVERNOTE_SERVER}/edam/note/"
 
 def show_error(message)
   @message = message
