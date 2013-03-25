@@ -7,6 +7,7 @@ gem 'oauth'
 gem 'ini'
 gem 'evernote-thrift'
 gem 'evernote_oauth'
+gem 'dalli'
 
 group :development do
   gem 'shotgun'

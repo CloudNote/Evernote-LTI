@@ -9,6 +9,7 @@ require 'oauth/request_proxy/rack_request'
 require 'oauth'
 require 'oauth/consumer'
 require 'evernote-thrift'
+require 'dalli'
 
 enable :sessions
 set :protection, :except => :frame_options
@@ -170,5 +171,4 @@ end
 
 def cache_nonce(nonce, timestamp)
     settings.cache.set(nonce, timestamp) 
-
 end
