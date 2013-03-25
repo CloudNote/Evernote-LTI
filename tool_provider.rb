@@ -12,6 +12,10 @@ require 'evernote-thrift'
 
 enable :sessions
 set :protection, :except => :frame_options
+set :cache, Dalli::Client.new(ENV['MEMCACHE_SERVERS'], 
+                              :username => ENV['MEMCACHE_USERNAME'], 
+                              :password => ENV['MEMCACHE_PASSWORD'],   
+                              :expires_in => 300) 
 
 get '/' do
   erb :index
@@ -153,4 +157,9 @@ end
 def was_nonce_used_in_last_x_minutes?(nonce, minutes=60)
   # some kind of caching solution or something to keep a short-term memory of used nonces
   false
+end
+
+def cache_nonce(nonce, timestamp)
+    settings.cache.set(nonce, timestamp) 
+
 end
