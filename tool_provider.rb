@@ -73,10 +73,10 @@ def authorize!
     return show_error "Your request is too old."
   end
 
-  # this isn't actually checking anything like it should, just want people
-  # implementing real tools to be aware they need to check the nonce
-  if was_nonce_used_in_last_x_minutes?(@tp.request_oauth_nonce, 60)
+  if was_nonce_used?(@tp.request_oauth_nonce)
     return show_error "Why are you reusing the nonce?"
+  else
+    cache_nonce(@tp.request_oauth_nonce, @tp.request_oauth_timestamp.to_i)
   end
 
   # save the launch parameters for use in later request
@@ -164,10 +164,15 @@ get '/tool_config.xml' do
   tc.to_xml(:indent => 2)
 end
 
-def was_nonce_used_in_last_x_minutes?(nonce, minutes=60)
-  # some kind of caching solution or something to keep a short-term memory of used nonces
-  false
+def was_nonce_used?(nonce)
+    timestamp = settings.cache.get(nonce)
+
+    if(!(timestamp.nil?) && (timestamp.to_i < 300) )
+        return true # nonce recently used
+    else
+        return false
 end
+
 
 def cache_nonce(nonce, timestamp)
     settings.cache.set(nonce, timestamp) 
