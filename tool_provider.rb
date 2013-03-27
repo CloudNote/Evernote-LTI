@@ -71,12 +71,16 @@ def authorize!
 
   if Time.now.utc.to_i - @tp.request_oauth_timestamp.to_i > 60*60
     return show_error "Your request is too old."
+  else
+    
   end
 
   # this isn't actually checking anything like it should, just want people
   # implementing real tools to be aware they need to check the nonce
   if was_nonce_used_in_last_x_minutes?(@tp.request_oauth_nonce, 60)
     return show_error "Why are you reusing the nonce?"
+  else
+    cache_nonce(@tp.request_oauth_nonce, Time.now.utc.to_i)
   end
 
   # save the launch parameters for use in later request
@@ -166,6 +170,7 @@ end
 
 def was_nonce_used_in_last_x_minutes?(nonce, minutes=60)
   # some kind of caching solution or something to keep a short-term memory of used nonces
+  
   false
 end
 
