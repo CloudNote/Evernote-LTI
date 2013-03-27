@@ -171,6 +171,7 @@ def was_nonce_used?(nonce)
         return true # nonce recently used
     else
         return false
+    end
 end
 
 
