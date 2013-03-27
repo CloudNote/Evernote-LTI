@@ -71,16 +71,12 @@ def authorize!
 
   if Time.now.utc.to_i - @tp.request_oauth_timestamp.to_i > 60*60
     return show_error "Your request is too old."
-  else
-    
   end
 
   # this isn't actually checking anything like it should, just want people
   # implementing real tools to be aware they need to check the nonce
   if was_nonce_used_in_last_x_minutes?(@tp.request_oauth_nonce, 60)
     return show_error "Why are you reusing the nonce?"
-  else
-    cache_nonce(@tp.request_oauth_nonce, Time.now.utc.to_i)
   end
 
   # save the launch parameters for use in later request
@@ -143,20 +139,20 @@ get '/tool_config.xml' do
   url = host + "/lti_tool"
   tc = IMS::LTI::ToolConfig.new(:title => "Evernote LTI", :launch_url => url)
   tc.description = "Evernote integration for the Canvas LMS"
-  tc.icon = "http://evernote.com/media/img/product_icons/evernote-25.png"
+  tc.icon = "http://evernote-lti.herokuapp.com/favicon.ico"
   
   editor_params = { "tool_id" => "evernote",
                     "privacy_level" => "anonymous",
                     "editor_button" => 
                     {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                        "icon_url" => "http://evernote.com/media/img/product_icons/evernote-25.png",
+                        "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
                         "text" => "Evernote",
                         "selection_width" => 690,
                         "selection_height" => 530,
                         "enabled" => true,  },
                     "resource_selection" =>
                     {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                        "icon_url" => "http://evernote.com/media/img/product_icons/evernote-25.png",
+                        "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
                         "text" => "Evernote",
                         "selection_width" => 690,
                         "selection_height" => 530,
@@ -170,7 +166,6 @@ end
 
 def was_nonce_used_in_last_x_minutes?(nonce, minutes=60)
   # some kind of caching solution or something to keep a short-term memory of used nonces
-  
   false
 end
 
