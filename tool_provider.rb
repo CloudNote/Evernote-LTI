@@ -100,11 +100,6 @@ def authorize!
   # Save the launch parameters for use in later request
   session['launch_params'] = @tp.to_params
   
-  # debug prints
-  # todo: remove
-  print params
-  print params[:user_id]
-  
   # Save the user's ID
   session['uid'] = params[:user_id]
   
@@ -244,7 +239,7 @@ end
 ##
 def db_addtoken(lmsID, token)
     # TODO: sanitize input?
-    dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES '#{lms_ID},', '#{token}';")
+    dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES ('#{lms_ID},', '#{token}');")
 end
 
 ##
@@ -297,11 +292,6 @@ get '/callback' do
     begin
       # Retrieve access token
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
-      
-      # Debug output
-      # TODO: remove
-      print session['uid']
-      print access_token
       
       # Store access token in database
       db_addtoken(session['uid'], access_token)
