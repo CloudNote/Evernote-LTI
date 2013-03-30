@@ -4,15 +4,19 @@ require 'pg'
 require 'yaml'
 require 'pp'
 require 'dalli'
-# must include the oauth proxy object
+# Must include the oauth proxy object
 require 'oauth/request_proxy/rack_request'
-# includes for evernote
+# Includes for evernote
 require 'oauth'
 require 'oauth/consumer'
 require 'evernote-thrift'
+require 'evernote-oauth'
 
+# Enable session storing in cookies
 enable :sessions
+# Disable Rack frame embedding protection
 set :protection, :except => :frame_options
+# Enable memcached usage through Dalli
 set :cache, Dalli::Client.new(ENV['MEMCACHE_SERVERS'], 
                               :username => ENV['MEMCACHE_USERNAME'], 
                               :password => ENV['MEMCACHE_PASSWORD'],   
@@ -22,13 +26,14 @@ get '/' do
   erb :index
 end
 
-# the consumer keys/secrets
+# The consumer keys/secrets
+# TODO: figure out what to do with these
 $oauth_creds = {"test" => "secret", "testing" => "supersecret"}
 
-# load database and evernote API info
+# Load database and evernote API info
 conninfo = YAML.load_file('settings.yml')
 
-# connect to database
+# Connect to database
 dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["port"],
                     nil, # options
@@ -37,8 +42,8 @@ dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["user"],
                     conninfo["db"]["password"])
                     
-# evernote server information
-# replace EVERNOTE_SERVER with https://www.evernote.com
+# Evernote server information
+# Replace EVERNOTE_SERVER with https://www.evernote.com
 # to use production servers
 EVERNOTE_SERVER = "https://sandbox.evernote.com"
 REQUEST_TOKEN_URL = "#{EVERNOTE_SERVER}/oauth"
@@ -81,7 +86,7 @@ def authorize!
     cache_nonce(@tp.request_oauth_nonce, @tp.request_oauth_timestamp.to_i)
   end
 
-  # save the launch parameters for use in later request
+  # Save the launch parameters for use in later request
   session['launch_params'] = @tp.to_params
 
   @username = @tp.username("Anonymous")
@@ -97,22 +102,21 @@ post '/lti_tool' do
     # It's a launch for grading
     erb :assessment
   else
-    # normal tool launch without grade write-back
+    # Normal tool launch without grade write-back
     @tp.lti_msg = "Sorry that tool was so boring"
     erb :boring_tool
   end
 end
 
-# Generate the page when launching as an editor
+# Generate the page when launching from an editor button
 post '/lti_tool_embed' do
   authorize!
   
-  # launch from an editor button
   # TODO: build the page properly
   erb :embed
 end
 
-# post the assessment results
+# Post the assessment results
 # TODO: evaluate if we need this
 post '/assessment' do
   if session['launch_params']
@@ -127,7 +131,7 @@ post '/assessment' do
     return show_error "This tool wasn't lunched as an outcome service"
   end
 
-  # post the given score to the TC
+  # Post the given score to the TC
   res = @tp.post_replace_result!(params['score'])
 
   if res.success?
