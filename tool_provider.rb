@@ -41,7 +41,14 @@ dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["dbname"],
                     conninfo["db"]["user"],
                     conninfo["db"]["password"])
-                    
+
+# Attempt creation of database
+begin
+    dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, PRIMARY KEY (LMS_ID) );")
+rescue
+    # TODO: more robust error handling
+end
+
 # Evernote server information
 # Replace EVERNOTE_SERVER with https://www.evernote.com
 # to use production servers
@@ -92,7 +99,10 @@ def authorize!
 
   # Save the launch parameters for use in later request
   session['launch_params'] = @tp.to_params
-
+  
+  # Save the user's ID
+  session['uid'] = params[:user_id]
+  
   @username = @tp.username("Anonymous")
 end
 
@@ -121,7 +131,7 @@ end
 post '/lti_tool_embed' do
   authorize!
   
-  # Check if we have an active Evearnote session
+  # Check if we have an active Evernote session
   if session['access_token']
     # Access user's note store
     noteStoreTransport = Thrift::HTTPClientTransport.new(access_token.params['edam_noteStoreUrl'])
@@ -225,6 +235,24 @@ def cache_nonce(nonce, timestamp)
 end
 
 ##
+# Add a session token to the database
+##
+def db_addtoken(lmsID, token)
+    # TODO: sanitize input?
+    dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES '#{lms_ID},', '#{token}';"
+end
+
+##
+# Get a session token from the database
+##
+def db_gettoken(lmsID)
+    # TODO: sanitize input?
+    dbconn.exec("SELECT evernote_token FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
+        return result
+    end
+end
+
+##
 # Reset the session
 # TODO: evaluate if we need this
 ##
@@ -248,28 +276,33 @@ get '/authorize' do
       session[:request_token] = consumer.get_request_token(:oauth_callback => callback_url)
       redirect session[:request_token].authorize_url
   rescue => e
-    @last_error = "Error obtaining temporary credentials: #{e.message}"
+    show_error "Error obtaining temporary credentials: #{e.message}"
     erb :error
   end
 end
 
 ##
 # Receive callback from the Evernote authorization page and exchange the
-# temporary credentials for an token credentials.
+# temporary credentials for access token credentials
 ##
 get '/callback' do
   if params['oauth_verifier']
     oauth_verifier = params['oauth_verifier']
 
     begin
+      # Retrieve access token
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
+      
+      # Store access token in database
+      db_addtoken(session['uid'], access_token)
+      
       erb :_return_to_lms
     rescue => e
-      @last_error = e.message
+      show_error = e.message
       erb :error
     end
   else
-    @last_error = "Content owner did not authorize the temporary credentials"
+    show_error = "Content owner did not authorize the temporary credentials"
     erb :error
   end
 end
