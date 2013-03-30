@@ -3,13 +3,13 @@ require 'ims/lti'
 require 'pg'
 require 'yaml'
 require 'pp'
+require 'dalli'
 # must include the oauth proxy object
 require 'oauth/request_proxy/rack_request'
 # includes for evernote
 require 'oauth'
 require 'oauth/consumer'
 require 'evernote-thrift'
-require 'dalli'
 
 enable :sessions
 set :protection, :except => :frame_options
@@ -46,11 +46,13 @@ ACCESS_TOKEN_URL = "#{EVERNOTE_SERVER}/oauth"
 AUTHORIZATION_URL = "#{EVERNOTE_SERVER}/OAuth.action"
 NOTESTORE_URL_BASE = "#{EVERNOTE_SERVER}/edam/note/"
 
+# Halts execution to show an error page
 def show_error(message)
   @message = message
   erb :error
 end
 
+# Authorizes the user during any LTI launch
 def authorize!
   if key = params['oauth_consumer_key']
     if secret = $oauth_creds[key]
@@ -87,6 +89,7 @@ end
 
 # The url for launching the tool
 # It will verify the OAuth signature
+# TODO: evalute if we need grade writeback
 post '/lti_tool' do
   authorize!
 
@@ -100,14 +103,17 @@ post '/lti_tool' do
   end
 end
 
+# Generate the page when launching as an editor
 post '/lti_tool_embed' do
   authorize!
   
   # launch from an editor button
+  # TODO: build the page properly
   erb :embed
 end
 
 # post the assessment results
+# TODO: evaluate if we need this
 post '/assessment' do
   if session['launch_params']
     key = session['launch_params']['oauth_consumer_key']
@@ -134,6 +140,7 @@ post '/assessment' do
   end
 end
 
+# Generates the LTI tool configuration XML
 get '/tool_config.xml' do
   host = request.scheme + "://" + request.host_with_port
   url = host + "/lti_tool"
@@ -141,6 +148,7 @@ get '/tool_config.xml' do
   tc.description = "Evernote integration for the Canvas LMS"
   tc.icon = "http://evernote-lti.herokuapp.com/favicon.ico"
   
+  # Extended params for Canvas LTI editor buttons
   editor_params = { "tool_id" => "evernote",
                     "privacy_level" => "anonymous",
                     "editor_button" => 
@@ -164,6 +172,7 @@ get '/tool_config.xml' do
   tc.to_xml(:indent => 2)
 end
 
+# Checks if nonce was used recently
 def was_nonce_used?(nonce)
     timestamp = settings.cache.get(nonce)
 
@@ -174,7 +183,7 @@ def was_nonce_used?(nonce)
     end
 end
 
-
+# Caches the nonce
 def cache_nonce(nonce, timestamp)
     settings.cache.set(nonce, timestamp) 
 end
