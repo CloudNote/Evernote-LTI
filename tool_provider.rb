@@ -239,7 +239,7 @@ end
 ##
 def db_addtoken(lmsID, token)
     # TODO: sanitize input?
-    dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES '#{lms_ID},', '#{token}';"
+    dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES '#{lms_ID},', '#{token}';")
 end
 
 ##
