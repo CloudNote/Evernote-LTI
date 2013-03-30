@@ -1,6 +1,3 @@
-<html>
-<head><title>Demo LTI Tool</title></head>
-<body>
 <p>Hi, <%= @username %>, this is an LTI tool. I hope you learned a lot.</p>
 <% if @tp.instructor? %>
   <p>You are a teacher, so you could configure this tool now if it were cool enough to have configurations.</p>
@@ -14,6 +11,3 @@
 <% end %>
 
 <%= erb :_return_to_lms %>
-
-</body>
-</html>

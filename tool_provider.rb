@@ -237,7 +237,6 @@ end
 # Get temporary credentials and redirect the user to Evernote for authorization
 ##
 get '/authorize' do
-  authorize!
   callback_url = request.url.chomp("authorize").concat("callback")
 
   begin
