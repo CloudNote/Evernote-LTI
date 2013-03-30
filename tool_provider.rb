@@ -14,6 +14,9 @@ require 'evernote-thrift'
 
 # Enable session storing in cookies
 enable :sessions
+# Enable development stack traces on errors
+# TODO: disable when ready for production
+set :environment, :development
 # Disable Rack frame embedding protection
 set :protection, :except => :frame_options
 # Enable memcached usage through Dalli
