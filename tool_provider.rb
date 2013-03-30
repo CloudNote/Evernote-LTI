@@ -10,7 +10,7 @@ require 'oauth/request_proxy/rack_request'
 require 'oauth'
 require 'oauth/consumer'
 require 'evernote-thrift'
-require 'evernote-oauth'
+#require 'evernote-oauth'
 
 # Enable session storing in cookies
 enable :sessions
@@ -191,3 +191,125 @@ end
 def cache_nonce(nonce, timestamp)
     settings.cache.set(nonce, timestamp) 
 end
+
+# Begin Evernote authorization test
+
+##
+# Reset the session
+##
+get '/reset' do
+  session.clear
+  erb :authorize
+end
+
+##
+# Get temporary credentials and redirect the user to Evernote for authorization
+##
+get '/authorize' do
+  authorize!
+  callback_url = request.url.chomp("authorize").concat("callback")
+
+  begin
+    consumer = OAuth::Consumer.new(conninfo["evernote"]["key"], conninfo["evernote"]["secret"],{
+      :site => EVERNOTE_SERVER,
+      :request_token_path => "/oauth",
+      :access_token_path => "/oauth",
+      :authorize_path => "/OAuth.action"})
+      session[:request_token] = consumer.get_request_token(:oauth_callback => callback_url)
+      redirect session[:request_token].authorize_url
+  rescue => e
+    @last_error = "Error obtaining temporary credentials: #{e.message}"
+    erb :error
+  end
+end
+
+##
+# Receive callback from the Evernote authorization page and exchange the
+# temporary credentials for an token credentials.
+##
+get '/callback' do
+  if params['oauth_verifier']
+    oauth_verifier = params['oauth_verifier']
+
+    begin
+      access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
+
+      noteStoreTransport = Thrift::HTTPClientTransport.new(access_token.params['edam_noteStoreUrl'])
+      noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
+      noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
+
+      # Build an array of notebook names from the array of Notebook objects
+      notebooks = noteStore.listNotebooks(access_token.token)
+      @notebooks = notebooks.map(&:name)
+      erb :complete
+    rescue => e
+      @last_error = e.message
+      erb :error
+    end
+  else
+    @last_error = "Content owner did not authorize the temporary credentials"
+    erb :error
+  end
+end
+
+__END__
+
+
+@@ layout
+<html>
+  <head>
+    <title>Evernote Ruby OAuth Demo</title>
+  </head>
+  <body>
+    <h1>Evernote Ruby OAuth Demo</h1>
+
+    <p>
+      This application uses the <a href="http://www.sinatrarb.com/">Sinatra framework</a> to demonstrate the use of OAuth to authenticate to the Evernote web service. OAuth support is implemented using the <a href="https://github.com/oauth/oauth-ruby">Ruby OAuth RubyGem</a>.
+    </p>
+
+    <p>
+      On this page, we demonstrate how OAuth authentication might work in the real world.
+      To see a step-by-step demonstration of how OAuth works, see <code>evernote_oauth.rb</code>.
+    </p>
+
+    <hr/>
+
+    <h2>Evernote Authentication</h2>
+
+    <%= yield %>
+
+    <hr/>
+    
+    <p>
+      <a href="/reset">Click here</a> to start over
+    </p>
+
+  </body>
+</html>
+
+
+@@ error
+<p>
+  <span style="color:red">An error occurred: <%= @last_error %></span>
+</p>
+
+@@ authorize
+<p>
+  <a href="/authorize">Click here</a> to authorize this application to access your Evernote account. You will be directed to evernote.com to authorize access, then returned to this application after authorization is complete.
+</p>
+
+
+@@ complete
+<p style="color:green">
+  Congratulations, you have successfully authorized this application to access your Evernote account!
+</p>
+
+<p>
+  You account contains the following notebooks:
+</p>
+
+<ul>
+  <% @notebooks.each do |notebook| %>
+    <li><%= notebook %></li>
+  <% end %>
+</ul>
