@@ -100,6 +100,11 @@ def authorize!
   # Save the launch parameters for use in later request
   session['launch_params'] = @tp.to_params
   
+  # debug prints
+  # todo: remove
+  print params
+  print params[:user_id]
+  
   # Save the user's ID
   session['uid'] = params[:user_id]
   
@@ -293,10 +298,16 @@ get '/callback' do
       # Retrieve access token
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
       
+      # Debug output
+      # TODO: remove
+      print session['uid']
+      print access_token
+      
       # Store access token in database
       db_addtoken(session['uid'], access_token)
       
-      erb :_return_to_lms
+      # TODO: make this show a relevant page
+      erb :index
     rescue => e
       show_error = e.message
       erb :error
