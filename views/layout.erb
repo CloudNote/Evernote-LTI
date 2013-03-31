@@ -17,6 +17,8 @@
         
         <%= yield %>
         
-        <%= erb :debug # TODO: remove to stop showing debug information %>
+        <!-- Debug information: TODO remove -->
+        <%= params.inspect %>
+        <%= session.inspect %>
     </body>
 </html>
