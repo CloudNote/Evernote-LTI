@@ -12,7 +12,10 @@ require 'evernote-thrift'
 #require 'evernote-oauth'
 
 # Enable session storing in cookies
-use Rack::Session::Cookie, :expire_after => 86400 # In seconds
+# TODO: change the secret
+use Rack::Session::Cookie, :key => 'rack.session',
+                               :expire_after => 86400,
+                               :secret => 'change_me'
 # Disable Rack frame embedding protection
 set :protection, :except => :frame_options
 # Enable memcached usage through Dalli
@@ -97,10 +100,13 @@ def authorize!
   end
 
   # Save the launch parameters for use in later request
-  session['launch_params'] = @tp.to_params
+  # TODO: do we need this? currently unused
+  # removing for potential cookie size limits
+  # session[:launch_params] = @tp.to_params
   
   # Save the user's ID
-  session['uid'] = params[:user_id]
+  # TODO: not working?
+  session[:lmsid] = params[:user_id]
   
   @username = @tp.username("Anonymous")
 end
@@ -292,7 +298,7 @@ get '/callback' do
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
       
       # Store access token in database
-      db_addtoken(session['uid'], access_token)
+      db_addtoken(session[:lmsid], access_token)
       
       # TODO: make this show a relevant page
       erb :index
