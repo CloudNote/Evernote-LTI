@@ -1,5 +1,5 @@
-require './tool_provider'
-
 $stdout.sync = true
+
+require './tool_provider'
 
 run Sinatra::Application
