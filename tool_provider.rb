@@ -12,7 +12,7 @@ require 'evernote-thrift'
 #require 'evernote-oauth'
 
 # Enable session storing in cookies
-enable :sessions
+use Rack::Session::Cookie, :expire_after => 86400 # In seconds
 # Disable Rack frame embedding protection
 set :protection, :except => :frame_options
 # Enable memcached usage through Dalli
