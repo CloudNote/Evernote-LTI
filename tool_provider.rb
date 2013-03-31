@@ -2,7 +2,6 @@ require 'sinatra'
 require 'ims/lti'
 require 'pg'
 require 'yaml'
-require 'pp'
 require 'dalli'
 # Must include the oauth proxy object
 require 'oauth/request_proxy/rack_request'
@@ -14,8 +13,6 @@ require 'evernote-thrift'
 
 # Enable session storing in cookies
 enable :sessions
-# Enable debug loggin in Heroku?
-enable :logging
 # Disable Rack frame embedding protection
 set :protection, :except => :frame_options
 # Enable memcached usage through Dalli
@@ -36,7 +33,7 @@ $oauth_creds = {"test" => "secret", "testing" => "supersecret"}
 conninfo = YAML.load_file('settings.yml')
 
 # Connect to database
-dbconn = PG.connect(conninfo["db"]["host"],
+@dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["port"],
                     nil, # options
                     nil, # tty
@@ -101,10 +98,6 @@ def authorize!
 
   # Save the launch parameters for use in later request
   session['launch_params'] = @tp.to_params
-  
-  # debug prints return: the TODO remove debuggening
-  pp params
-  pp params[:user_id]
   
   # Save the user's ID
   session['uid'] = params[:user_id]
@@ -245,7 +238,7 @@ end
 ##
 def db_addtoken(lmsID, token)
     # TODO: sanitize input?
-    dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES ('#{lms_ID},', '#{token}');")
+    @dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES ('#{lms_ID},', '#{token}');")
 end
 
 ##
@@ -253,7 +246,7 @@ end
 ##
 def db_gettoken(lmsID)
     # TODO: sanitize input?
-    dbconn.exec("SELECT evernote_token FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
+    @dbconn.exec("SELECT evernote_token FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
         return result
     end
 end
@@ -297,9 +290,6 @@ get '/callback' do
     begin
       # Retrieve access token
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
-      
-      # debug print TODO remove
-      pp session['uid']
       
       # Store access token in database
       db_addtoken(session['uid'], access_token)
