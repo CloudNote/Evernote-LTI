@@ -1,11 +1,11 @@
 <p style="color: #ff3d23;"><%= @message %></p>
+      <td><%= params[key] %></td>
+    </tr>
+  <% end %>
+</table>
 
 <h3>Parameters</h3>
 <table>
   <% params.keys.sort.each do |key| %>
     <tr>
       <td><%= key %></td>
-      <td><%= params[key] %></td>
-    </tr>
-  <% end %>
-</table>

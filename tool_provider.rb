@@ -295,13 +295,13 @@ get '/callback' do
 
     begin
       # Retrieve access token
-      access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
+      #access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
       
       # Store access token in database
-      db_addtoken(session[:lmsid], access_token)
+      #db_addtoken(session[:lmsid], access_token)
       
-      # TODO: make this show a relevant page
-      erb :index
+      #erb :successful_auth
+      erb debug_session
     rescue => e
       show_error = e.message
     end
