@@ -14,6 +14,8 @@ require 'evernote-thrift'
 
 # Enable session storing in cookies
 enable :sessions
+# Enable debug loggin in Heroku?
+enable :logging
 # Disable Rack frame embedding protection
 set :protection, :except => :frame_options
 # Enable memcached usage through Dalli
@@ -99,6 +101,10 @@ def authorize!
 
   # Save the launch parameters for use in later request
   session['launch_params'] = @tp.to_params
+  
+  # debug prints return: the TODO remove debuggening
+  pp params
+  pp params[:user_id]
   
   # Save the user's ID
   session['uid'] = params[:user_id]
@@ -277,7 +283,6 @@ get '/authorize' do
       redirect session[:request_token].authorize_url
   rescue => e
     show_error "Error obtaining temporary credentials: #{e.message}"
-    erb :error
   end
 end
 
@@ -293,6 +298,9 @@ get '/callback' do
       # Retrieve access token
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
       
+      # debug print TODO remove
+      pp session['uid']
+      
       # Store access token in database
       db_addtoken(session['uid'], access_token)
       
@@ -300,10 +308,8 @@ get '/callback' do
       erb :index
     rescue => e
       show_error = e.message
-      erb :error
     end
   else
     show_error = "Content owner did not authorize the temporary credentials"
-    erb :error
   end
 end
