@@ -242,7 +242,7 @@ end
 ##
 # Add a session token to the database
 ##
-def db_addtoken(lmsID, token)
+def db_addToken(lmsID, token)
     # TODO: sanitize input?
     $dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES ('#{lmsID},', '#{token}');")
 end
@@ -250,7 +250,7 @@ end
 ##
 # Get a session token from the database
 ##
-def db_gettoken(lmsID)
+def db_getToken(lmsID)
     # TODO: sanitize input?
     $dbconn.exec("SELECT evernote_token FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
         return result
