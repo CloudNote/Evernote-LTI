@@ -36,7 +36,7 @@ $oauth_creds = {"test" => "secret", "testing" => "supersecret"}
 conninfo = YAML.load_file('settings.yml')
 
 # Connect to database
-@dbconn = PG.connect(conninfo["db"]["host"],
+$dbconn = PG.connect(conninfo["db"]["host"],
                     conninfo["db"]["port"],
                     nil, # options
                     nil, # tty
@@ -46,7 +46,7 @@ conninfo = YAML.load_file('settings.yml')
 
 # Attempt creation of database
 begin
-    dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, PRIMARY KEY (LMS_ID) );")
+    $dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, PRIMARY KEY (LMS_ID) );")
 rescue
     # TODO: more robust error handling
 end
@@ -244,7 +244,7 @@ end
 ##
 def db_addtoken(lmsID, token)
     # TODO: sanitize input?
-    @dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES ('#{lmsID},', '#{token}');")
+    $dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES ('#{lmsID},', '#{token}');")
 end
 
 ##
@@ -252,7 +252,7 @@ end
 ##
 def db_gettoken(lmsID)
     # TODO: sanitize input?
-    @dbconn.exec("SELECT evernote_token FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
+    $dbconn.exec("SELECT evernote_token FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
         return result
     end
 end
