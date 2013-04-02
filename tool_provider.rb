@@ -247,6 +247,7 @@ end
 ##
 def db_addToken(lmsID, token, notestoreurl, expires)
     # TODO: sanitize input?
+    # TODO: Error handling for re-authorized LMS_ID?
     $dbconn.query("INSERT INTO TOKEN (lms_id, evernote_token, evernote_notestoreurl, expires) VALUES ('#{lmsID}', '#{token}', '#{notestoreurl}', to_timestamp(#{expires}));")
 end
 
