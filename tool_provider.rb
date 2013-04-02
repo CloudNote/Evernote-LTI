@@ -308,7 +308,7 @@ get '/callback' do
       db_addToken(session[:lmsid], access_token.token, access_token.params['edam_noteStoreUrl'], access_token.params['edam_expires'])
       
       #erb :successful_auth
-      erb debug_session
+      erb :successful_auth
     rescue => e
       show_error = e.message
     end
