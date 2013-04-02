@@ -136,7 +136,7 @@ end
 post '/lti_tool_embed' do
   authorize!
   
-  access_token = db_getToken(session[:lmsid])
+  access_token = db_getToken(params[:user_id])
   
   # Check if we have an active Evernote session
   # TODO: always true. we need to break down the pg result
@@ -255,12 +255,12 @@ end
 ##
 def db_getToken(lmsID)
     # TODO: sanitize input?
-    $dbconn.query("SELECT evernote_token, evernote_notestoreurl, expires FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
-        if result.check
-            return result
-        else
-            return nil
-        end
+    result = $dbconn.query("SELECT evernote_token, evernote_notestoreurl, expires FROM TOKEN WHERE lms_id = '#{lmsID}'")
+    
+    if result.num_tuples.zero?
+        return nil
+    else
+        return result
     end
 end
 
