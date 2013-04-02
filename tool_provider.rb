@@ -256,7 +256,11 @@ end
 def db_getToken(lmsID)
     # TODO: sanitize input?
     $dbconn.query("SELECT evernote_token, evernote_notestoreurl, expires FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
-        return result
+        if result.check
+            return result
+        else
+            return nil
+        end
     end
 end
 
@@ -299,8 +303,6 @@ get '/callback' do
     begin
       # Retrieve access token
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
-      
-      pp access_token
       
       # Store access token in database
       db_addToken(session[:lmsid], access_token.token, access_token.params['edam_noteStoreUrl'], access_token.params['edam_expires'])
