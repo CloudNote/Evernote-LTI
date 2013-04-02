@@ -142,12 +142,12 @@ post '/lti_tool_embed' do
   # TODO: always true. we need to break down the pg result
   if access_token
     # Access user's note store
-    noteStoreTransport = Thrift::HTTPClientTransport.new(access_token.params['edam_noteStoreUrl'])
+    noteStoreTransport = Thrift::HTTPClientTransport.new(access_token['evernote_notestoreurl'])
     noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
     noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
     
     # Build an array of notebook names from the array of Notebook objects
-    notebooks = noteStore.listNotebooks(access_token.token)
+    notebooks = noteStore.listNotebooks(access_token['evernote_token'])
     @notebooks = notebooks.map(&:name)
     
     # Generate the page
@@ -258,9 +258,11 @@ def db_getToken(lmsID)
     result = $dbconn.query("SELECT evernote_token, evernote_notestoreurl, expires FROM TOKEN WHERE lms_id = '#{lmsID}'")
     
     if result.num_tuples.zero?
+        # No results
         return nil
     else
-        return result
+        # Return a hash of the result
+        return result[0]
     end
 end
 
