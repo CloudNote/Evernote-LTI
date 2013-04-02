@@ -46,7 +46,7 @@ $dbconn = PG.connect(conninfo["db"]["host"],
 
 # Attempt creation of database
 begin
-    $dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, PRIMARY KEY (LMS_ID) );")
+    $dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, EVERNOTE_NOTESTOREURL text, EXPIRES timestamp, PRIMARY KEY (LMS_ID) );")
 rescue
     # TODO: more robust error handling
 end
@@ -136,8 +136,11 @@ end
 post '/lti_tool_embed' do
   authorize!
   
+  access_token = db_getToken(session[:lmsid])
+  
   # Check if we have an active Evernote session
-  if session['access_token']
+  # TODO: always true. we need to break down the pg result
+  if access_token
     # Access user's note store
     noteStoreTransport = Thrift::HTTPClientTransport.new(access_token.params['edam_noteStoreUrl'])
     noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
@@ -242,9 +245,9 @@ end
 ##
 # Add a session token to the database
 ##
-def db_addToken(lmsID, token)
+def db_addToken(lmsID, token, notestoreurl, expires)
     # TODO: sanitize input?
-    $dbconn.exec("INSERT INTO TOKEN (lms_id, evernote_token) VALUES ('#{lmsID},', '#{token}');")
+    $dbconn.query("INSERT INTO TOKEN (lms_id, evernote_token, evernote_notestoreurl, expires) VALUES ('#{lmsID},', '#{token}', '#{notestoreurl}', to_timestamp(#{expires}));")
 end
 
 ##
@@ -252,7 +255,7 @@ end
 ##
 def db_getToken(lmsID)
     # TODO: sanitize input?
-    $dbconn.exec("SELECT evernote_token FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
+    $dbconn.query("SELECT evernote_token, evernote_notestoreurl, expires FROM TOKEN WHERE lms_id = '#{lmsID}'") do |result|
         return result
     end
 end
@@ -295,10 +298,12 @@ get '/callback' do
 
     begin
       # Retrieve access token
-      #access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
+      access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
+      
+      pp access_token
       
       # Store access token in database
-      #db_addtoken(session[:lmsid], access_token)
+      db_addToken(session[:lmsid], access_token.token, access_token.params['edam_noteStoreUrl'], access_token.params['edam_expires'])
       
       #erb :successful_auth
       erb debug_session
