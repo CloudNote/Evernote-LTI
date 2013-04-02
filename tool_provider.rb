@@ -247,7 +247,7 @@ end
 ##
 def db_addToken(lmsID, token, notestoreurl, expires)
     # TODO: sanitize input?
-    $dbconn.query("INSERT INTO TOKEN (lms_id, evernote_token, evernote_notestoreurl, expires) VALUES ('#{lmsID},', '#{token}', '#{notestoreurl}', to_timestamp(#{expires}));")
+    $dbconn.query("INSERT INTO TOKEN (lms_id, evernote_token, evernote_notestoreurl, expires) VALUES ('#{lmsID}', '#{token}', '#{notestoreurl}', to_timestamp(#{expires}));")
 end
 
 ##
