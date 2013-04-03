@@ -148,9 +148,24 @@ post '/lti_tool_embed' do
     noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
     noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
     
-    # Build an array of notebook names from the array of Notebook objects
-    notebooks = noteStore.listNotebooks(access_token['evernote_token'])
-    @notebooks = notebooks.map(&:name)
+    # Create an empty hash for notebooks
+    @notebooks = Hash.new
+    
+    # Build a hash of Notebook objects containing Note objects
+    usernotebooks = noteStore.listNotebooks(access_token['evernote_token'])
+    # Only ask for the GUID and title from the Evernote servers
+    resultspec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new(:includeTitle => true)
+    # Get the max note count
+    maxnotes = Evernote::EDAM::Limits::EDAM_USER_NOTES_MAX
+    
+    usernotebooks.each() do |notebook|
+        # Filter for notes in this notebook
+        filter = Evernote::EDAM::NoteStore::NoteFilter.new(:notebookGuid => notebook.guid)
+        # Retrieve notes
+        @notebooks[notebook.name] = noteStore.findNotesMetadata(access_token['evernote_token'], filter, 0, maxnotes, resultspec).notes.map(&:title)
+    end
+    
+    #@notebooks = notebooks.map(&:name)
     
     # Generate the page
     @header = "Embed a note"

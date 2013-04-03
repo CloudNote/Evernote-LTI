@@ -1,7 +1,18 @@
-header {
-    display: block;
-}
+/* Header styles */
 
 header img {
     padding-right: 10px;
+}
+
+/* List styles */
+li.notebook {
+    list-style-image: url('notepadicon.gif');
+}
+
+li.note {
+    list-style-image: url('noteicon.png');
+}
+
+li.note:hover {
+    background-color:GreenYellow;
 }

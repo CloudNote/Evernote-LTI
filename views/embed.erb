@@ -1,5 +1,11 @@
 <ul>
-  <% @notebooks.each do |notebook| %>
-    <li><%= notebook %></li>
+  <% @notebooks.each_key do |notebook| %>
+    <li class="notebook"><%= notebook %>
+        <ul>
+            <% @notebooks[notebook].each do |note| %>
+                <li class="note"><%= note %></li>
+            <% end %>
+        </ul>
+    </li>
   <% end %>
 </ul>
