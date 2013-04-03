@@ -25,6 +25,7 @@ set :cache, Dalli::Client.new(ENV['MEMCACHE_SERVERS'],
                               :expires_in => 300) 
 
 get '/' do
+  @header = "Evernote LTI"
   erb :index
 end
 
@@ -64,6 +65,7 @@ NOTESTORE_URL_BASE = "#{EVERNOTE_SERVER}/edam/note/"
 # Halts execution to show an error page
 ##
 def show_error(message)
+  @header = "Error"
   @message = message
   erb :error
 end
@@ -151,9 +153,11 @@ post '/lti_tool_embed' do
     @notebooks = notebooks.map(&:name)
     
     # Generate the page
+    @header = "Embed a note"
     erb :embed
   else
     # Send the user to Evernote for authorization
+    @header = "Authorization required"
     erb :authorize
   end
 end
@@ -273,6 +277,7 @@ end
 ##
 get '/reset' do
   session.clear
+  @header = "Authorization required"
   erb :authorize
 end
 
@@ -311,6 +316,7 @@ get '/callback' do
       db_addToken(session[:lmsid], access_token.token, access_token.params['edam_noteStoreUrl'], access_token.params['edam_expires'])
       
       #erb :successful_auth
+      @header = "Authorization successful"
       erb :successful_auth
     rescue => e
       show_error = e.message
