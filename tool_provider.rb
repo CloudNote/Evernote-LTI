@@ -74,6 +74,7 @@ end
 # Authorizes the user during any LTI launch
 ##
 def authorize!
+
   if key = params['oauth_consumer_key']
     if secret = $oauth_creds[key]
       @tp = IMS::LTI::ToolProvider.new(key, secret, params)
@@ -100,15 +101,9 @@ def authorize!
   else
     cache_nonce(@tp.request_oauth_nonce, @tp.request_oauth_timestamp.to_i)
   end
-
-  # Save the launch parameters for use in later request
-  # TODO: do we need this? currently unused
-  # removing for potential cookie size limits
-  # session[:launch_params] = @tp.to_params
   
-  # Save the user's ID
-  # TODO: not working?
-  session[:lmsid] = params[:user_id]
+  # Save the launch parameters for use in later request
+  session[:launch_params] = @tp.to_params
   
   @username = @tp.username("Anonymous")
 end
@@ -320,7 +315,7 @@ end
 # temporary credentials for access token credentials
 ##
 get '/callback' do
-  if params['oauth_verifier']
+  if params['oauth_verifier'] and session[:launch_params]
     oauth_verifier = params['oauth_verifier']
 
     begin
@@ -328,7 +323,10 @@ get '/callback' do
       access_token = session[:request_token].get_access_token(:oauth_verifier => oauth_verifier)
       
       # Store access token in database
-      db_addToken(session[:lmsid], access_token.token, access_token.params['edam_noteStoreUrl'], access_token.params['edam_expires'])
+      db_addToken(session[:launch_params][:user_id], access_token.token, access_token.params['edam_noteStoreUrl'], access_token.params['edam_expires'])
+      
+      # Build a fake Tool Provider object
+      @tp = IMS::LTI::ToolProvider.new("", "", session[:launch_params])
       
       #erb :successful_auth
       @header = "Authorization successful"
