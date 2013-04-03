@@ -154,10 +154,10 @@ post '/lti_tool_embed' do
     maxnotes = Evernote::EDAM::Limits::EDAM_USER_NOTES_MAX
     
     usernotebooks.each() do |notebook|
-        # Filter for notes in this notebook
-        filter = Evernote::EDAM::NoteStore::NoteFilter.new(:notebookGuid => notebook.guid)
-        # Retrieve notes
-        @notebooks[notebook.name] = noteStore.findNotesMetadata(access_token['evernote_token'], filter, 0, maxnotes, resultspec).notes.map(&:title)
+      # Filter for notes in this notebook
+      filter = Evernote::EDAM::NoteStore::NoteFilter.new(:notebookGuid => notebook.guid)
+      # Retrieve notes
+      @notebooks[notebook.name] = noteStore.findNotesMetadata(access_token['evernote_token'], filter, 0, maxnotes, resultspec).notes.map(&:title)
     end
     
     #@notebooks = notebooks.map(&:name)
@@ -216,19 +216,19 @@ get '/tool_config.xml' do
   editor_params = { "tool_id" => "evernote",
                     "privacy_level" => "anonymous",
                     "editor_button" => 
-                    {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                        "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
-                        "text" => "Evernote",
-                        "selection_width" => 690,
-                        "selection_height" => 530,
-                        "enabled" => true,  },
+                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                      "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
+                      "text" => "Evernote",
+                      "selection_width" => 690,
+                      "selection_height" => 530,
+                      "enabled" => true,  },
                     "resource_selection" =>
-                    {   "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                        "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
-                        "text" => "Evernote",
-                        "selection_width" => 690,
-                        "selection_height" => 530,
-                        "enabled" => true,  } }
+                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                      "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
+                      "text" => "Evernote",
+                      "selection_width" => 690,
+                      "selection_height" => 530,
+                      "enabled" => true,  } }
   
   tc.set_ext_params("canvas.instructure.com", editor_params)
 
@@ -240,45 +240,45 @@ end
 # Checks if nonce was used recently
 ##
 def was_nonce_used?(nonce)
-    timestamp = settings.cache.get(nonce)
+  timestamp = settings.cache.get(nonce)
 
-    if(!(timestamp.nil?) && (timestamp.to_i < 300) )
-        return true # nonce recently used
-    else
-        return false
-    end
+  if(!(timestamp.nil?) && (timestamp.to_i < 300) )
+    return true # nonce recently used
+  else
+    return false
+  end
 end
 
 ##
 # Caches the nonce
 ##
 def cache_nonce(nonce, timestamp)
-    settings.cache.set(nonce, timestamp) 
+  settings.cache.set(nonce, timestamp) 
 end
 
 ##
 # Add a session token to the database
 ##
 def db_addToken(lmsID, token, notestoreurl, expires)
-    # TODO: sanitize input?
-    # TODO: Error handling for re-authorized LMS_ID?
-    $dbconn.query("INSERT INTO TOKEN (lms_id, evernote_token, evernote_notestoreurl, expires) VALUES ('#{lmsID}', '#{token}', '#{notestoreurl}', to_timestamp(#{expires}));")
+  # TODO: sanitize input?
+  # TODO: Error handling for re-authorized LMS_ID?
+  $dbconn.query("INSERT INTO TOKEN (lms_id, evernote_token, evernote_notestoreurl, expires) VALUES ('#{lmsID}', '#{token}', '#{notestoreurl}', to_timestamp(#{expires}));")
 end
 
 ##
 # Get a session token from the database
 ##
 def db_getToken(lmsID)
-    # TODO: sanitize input?
-    result = $dbconn.query("SELECT evernote_token, evernote_notestoreurl, expires FROM TOKEN WHERE lms_id = '#{lmsID}'")
-    
-    if result.num_tuples.zero?
-        # No results
-        return nil
-    else
-        # Return a hash of the result
-        return result[0]
-    end
+  # TODO: sanitize input?
+  result = $dbconn.query("SELECT evernote_token, evernote_notestoreurl, expires FROM TOKEN WHERE lms_id = '#{lmsID}'")
+  
+  if result.num_tuples.zero?
+    # No results
+    return nil
+  else
+    # Return a hash of the result
+    return result[0]
+  end
 end
 
 ##
@@ -303,8 +303,8 @@ get '/authorize' do
       :request_token_path => "/oauth",
       :access_token_path => "/oauth",
       :authorize_path => "/OAuth.action"})
-      session[:request_token] = consumer.get_request_token(:oauth_callback => callback_url)
-      redirect session[:request_token].authorize_url
+    session[:request_token] = consumer.get_request_token(:oauth_callback => callback_url)
+    redirect session[:request_token].authorize_url
   rescue => e
     show_error "Error obtaining temporary credentials: #{e.message}"
   end
