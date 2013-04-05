@@ -47,9 +47,9 @@ $dbconn = PG.connect(conninfo["db"]["host"],
 
 # Attempt creation of database
 begin
-    $dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, EVERNOTE_NOTESTOREURL text, EXPIRES timestamp, PRIMARY KEY (LMS_ID) );")
+  $dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, EVERNOTE_NOTESTOREURL text, EXPIRES timestamp, PRIMARY KEY (LMS_ID) );")
 rescue
-    # TODO: more robust error handling
+  # TODO: more robust error handling
 end
 
 # Evernote server information
@@ -157,7 +157,10 @@ post '/lti_tool_embed' do
       # Filter for notes in this notebook
       filter = Evernote::EDAM::NoteStore::NoteFilter.new(:notebookGuid => notebook.guid)
       # Retrieve notes
-      @notebooks[notebook.name] = noteStore.findNotesMetadata(access_token['evernote_token'], filter, 0, maxnotes, resultspec).notes.map(&:title)
+      @notebooks[notebook.guid] =   {:notebook => notebook,
+                                     :notelist => noteStore.findNotesMetadata(
+                                       access_token['evernote_token'], filter, 0, maxnotes, resultspec)
+                                    }
     end
     
     #@notebooks = notebooks.map(&:name)

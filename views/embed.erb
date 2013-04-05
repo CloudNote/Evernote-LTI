@@ -1,11 +1,11 @@
 <ul>
-  <% @notebooks.each_key do |notebook| %>
-    <li class="notebook"><%= notebook %>
-        <ul>
-            <% @notebooks[notebook].each do |note| %>
-                <li class="note"><%= note %></li>
-            <% end %>
-        </ul>
+  <% @notebooks.each_value do |notebook| %>
+    <li class="notebook"><%= notebook[:notebook].name %>
+      <ul>
+        <% notebook[:notelist].notes.each do |note| %>
+          <li class="note"><%= note.title %></li>
+        <% end %>
+      </ul>
     </li>
   <% end %>
 </ul>
