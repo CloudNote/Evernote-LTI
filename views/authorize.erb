@@ -1,3 +1,16 @@
 <p>
-  <a href="javascript:window.open('http://evernote-lti.herokuapp.com/authorize');">Click here</a> to authorize this application to access your Evernote account.<br>You will be directed to evernote.com to authorize access, then returned to your LMS when authorization is complete.
+  <script language="JavaScript">
+  <!--
+    window.onload = function() {
+      var link = document.getElementById("authorizeLink");
+
+      link.onclick = function() {
+        <%= erb :_return_to_lms %>
+        return false;
+      }
+    }
+  //-->
+  </script>
+  
+  <a id="authorizeLink" href="javascript:window.open('/authorize');">Click here</a> to authorize this application to access your Evernote account.<br>You will be directed to evernote.com to authorize access, then returned to your LMS when authorization is complete.
 </p>
