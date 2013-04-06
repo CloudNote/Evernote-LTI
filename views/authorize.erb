@@ -5,7 +5,7 @@
       var link = document.getElementById("authorizeLink");
 
       link.onclick = function() {
-        <%= erb :_return_to_lms %>
+        window.location.href = "<%= @tp.build_return_url %>";
         return false;
       }
     }
