@@ -174,14 +174,14 @@ get '/tool_config.xml' do
   editor_params = { "tool_id" => "evernote",
                     "privacy_level" => "anonymous",
                     "editor_button" => 
-                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool",
                       "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
                       "text" => "Evernote",
                       "selection_width" => 690,
                       "selection_height" => 530,
                       "enabled" => true,  },
                     "resource_selection" =>
-                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool",
                       "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
                       "text" => "Evernote",
                       "selection_width" => 690,
@@ -196,58 +196,9 @@ get '/tool_config.xml' do
 end
 
 ##
-# The url for launching the tool
-# It will verify the OAuth signature
-# TODO: evalute if we need this block at all
+# Generate the page when launching from an editor button
 ##
 post '/lti_tool' do
-  authorize!
-
-  if @tp.outcome_service?
-    # It's a launch for grading
-    erb :assessment
-  else
-    # Normal tool launch without grade write-back
-    @tp.lti_msg = "Sorry that tool was so boring"
-    erb :boring_tool
-  end
-end
-
-##
-# Post the assessment results
-# TODO: evaluate if we need this
-##
-post '/assessment' do
-  if session['launch_params']
-    key = session['launch_params']['oauth_consumer_key']
-  else
-    return show_error "The tool never launched"
-  end
-
-  @tp = IMS::LTI::ToolProvider.new(key, $oauth_creds[key], session['launch_params'])
-
-  if !@tp.outcome_service?
-    return show_error "This tool wasn't lunched as an outcome service"
-  end
-
-  # Post the given score to the TC
-  res = @tp.post_replace_result!(params['score'])
-
-  if res.success?
-    @score = params['score']
-    @tp.lti_msg = "Message shown when arriving back at Tool Consumer."
-    erb :assessment_finished
-  else
-    @tp.lti_errormsg = "The Tool Consumer failed to add the score."
-    show_error "Your score was not recorded: #{res.description}"
-  end
-end
-
-##
-# Generate the page when launching from an editor button
-# TODO: rename to /lti_tool if we decide not to support non-editor launches
-##
-post '/lti_tool_embed' do
   # Verify the launch parameters
   authorize!
 
@@ -291,16 +242,6 @@ post '/lti_tool_embed' do
     @header = "Authorization required"
     erb :authorize
   end
-end
-
-##
-# Reset the session
-# TODO: evaluate if we need this
-##
-get '/reset' do
-  session.clear
-  @header = "Authorization required"
-  erb :authorize
 end
 
 ##
