@@ -14,8 +14,7 @@ require 'evernote-thrift'
 # Enable session storing in cookies
 # TODO: change the secret
 use Rack::Session::Cookie, :key => 'rack.session',
-                               :expire_after => 86400,
-                               :secret => 'change_me'
+                               :expire_after => 86400
 # Disable Rack frame embedding protection
 set :protection, :except => :frame_options
 # Enable memcached usage through Dalli
