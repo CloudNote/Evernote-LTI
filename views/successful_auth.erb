@@ -1,19 +1,10 @@
 <p>
-  You have successfully authorized your LMS to access your Evernote account! 
-
   <script language="JavaScript">
   <!--
-  function refreshParent() {
-    window.opener.location.href = "<%= @tp.build_return_url %>";
-
-    if (window.opener.progressWindow)
-    	
-    {
-      window.opener.progressWindow.close()
-    }
+  function closeWindow() {
     window.close();
   }
-  window.onload = refreshParent;
+  window.onload = closeWindow;
   //-->
   </script>
 </p>
