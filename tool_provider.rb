@@ -279,9 +279,6 @@ get '/callback' do
       # Store access token in database
       db_addToken(session[:launch_params]['user_id'], access_token.token, access_token.params['edam_noteStoreUrl'], access_token.params['edam_expires'])
       
-      # Build a fake Tool Provider object
-      @tp = IMS::LTI::ToolProvider.new("", "", session[:launch_params])
-      
       #erb :successful_auth
       @header = "Authorization successful"
       erb :successful_auth
