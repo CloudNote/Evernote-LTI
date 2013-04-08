@@ -12,7 +12,6 @@ require 'evernote-thrift'
 #require 'evernote-oauth'
 
 # Enable session storing in cookies
-# TODO: change the secret
 use Rack::Session::Cookie, :key => 'rack.session',
                                :expire_after => 86400
 # Disable Rack frame embedding protection
@@ -43,6 +42,7 @@ $dbconn = PG.connect(conninfo["db"]["host"],
 begin
   $dbconn.exec("CREATE TABLE TOKEN ( LMS_ID text NOT NULL, EVERNOTE_TOKEN text, EVERNOTE_NOTESTOREURL text, EXPIRES timestamp, PRIMARY KEY (LMS_ID) );")
 rescue
+  # Database already exists, or another error
   # TODO: more robust error handling
 end
 
