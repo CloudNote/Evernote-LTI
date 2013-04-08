@@ -1,16 +1,14 @@
-<p>
-  <script language="JavaScript">
-  <!--
-    window.onload = function() {
-      var link = document.getElementById("authorizeLink");
+<script language="JavaScript">
+<!--
+  window.onload = function() {
+    var link = document.getElementById("authorizeLink");
 
-      link.onclick = function() {
-        window.location.href = "<%= @tp.build_return_url %>";
-        return true;
-      }
+    link.onclick = function() {
+      window.location.href = "<%= @tp.build_return_url %>";
+      return true;
     }
-  //-->
-  </script>
-  
-  <a id="authorizeLink" href="javascript:window.open('/authorize');">Click here</a> to authorize this application to access your Evernote account.<br>You will be directed to evernote.com to authorize access, then returned to your LMS when authorization is complete.
-</p>
+  }
+//-->
+</script>
+
+<a id="authorizeLink" href="javascript:window.open('/authorize');">Click here</a> to authorize this application to access your Evernote account.<br>You will be directed to evernote.com to authorize access, then returned to your LMS when authorization is complete.
