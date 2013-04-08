@@ -19,3 +19,6 @@ doc/
 
 # Cloud9 Revisions
 .c9revisions/
+
+# Settings file
+settings.yml
