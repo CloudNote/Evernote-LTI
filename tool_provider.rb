@@ -24,11 +24,6 @@ set :cache, Dalli::Client.new(ENV['MEMCACHE_SERVERS'],
                               :password => ENV['MEMCACHE_PASSWORD'],   
                               :expires_in => 300) 
 
-get '/' do
-  @header = "Evernote LTI"
-  erb :index
-end
-
 # The consumer keys/secrets
 # TODO: figure out what to do with these
 $oauth_creds = {"test" => "secret", "testing" => "supersecret"}
@@ -74,7 +69,7 @@ end
 # Authorizes the user during any LTI launch
 ##
 def authorize!
-
+  # Ensure keys match
   if key = params['oauth_consumer_key']
     if secret = $oauth_creds[key]
       @tp = IMS::LTI::ToolProvider.new(key, secret, params)
@@ -87,156 +82,29 @@ def authorize!
   else
     return show_error "No consumer key"
   end
-
+  
+  # Ensure OAuth signature is valid
   if !@tp.valid_request?(request)
     return show_error "The OAuth signature was invalid"
   end
 
+  # Ensure timestamp is valid
   if Time.now.utc.to_i - @tp.request_oauth_timestamp.to_i > 60*60
     return show_error "Your request is too old."
   end
 
+  # Ensure nonce is valid
   if was_nonce_used?(@tp.request_oauth_nonce)
     return show_error "Why are you reusing the nonce?"
   else
     cache_nonce(@tp.request_oauth_nonce, @tp.request_oauth_timestamp.to_i)
   end
   
-  # Save the launch parameters for use in later request
+  # Save the launch parameters for use in later requests
   session[:launch_params] = @tp.to_params
-  
+
+  # Get the username, using "Anonymous" as a default if none exists
   @username = @tp.username("Anonymous")
-end
-
-##
-# The url for launching the tool
-# It will verify the OAuth signature
-# TODO: evalute if we need this block at all
-##
-post '/lti_tool' do
-  authorize!
-
-  if @tp.outcome_service?
-    # It's a launch for grading
-    erb :assessment
-  else
-    # Normal tool launch without grade write-back
-    @tp.lti_msg = "Sorry that tool was so boring"
-    erb :boring_tool
-  end
-end
-
-##
-# Generate the page when launching from an editor button
-# TODO: rename to /lti_tool if we decide not to support non-editor launches
-##
-post '/lti_tool_embed' do
-  authorize!
-  
-  access_token = db_getToken(params[:user_id])
-  
-  # Check if we have an active Evernote session
-  # TODO: always true. we need to break down the pg result
-  if access_token
-    # Access user's note store
-    noteStoreTransport = Thrift::HTTPClientTransport.new(access_token['evernote_notestoreurl'])
-    noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
-    noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
-    
-    # Create an empty hash for notebooks
-    @notebooks = Hash.new
-    
-    # Build a hash of Notebook objects containing Note objects
-    usernotebooks = noteStore.listNotebooks(access_token['evernote_token'])
-    # Only ask for the GUID and title from the Evernote servers
-    resultspec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new(:includeTitle => true)
-    # Get the max note count
-    maxnotes = Evernote::EDAM::Limits::EDAM_USER_NOTES_MAX
-    
-    usernotebooks.each() do |notebook|
-      # Filter for notes in this notebook
-      filter = Evernote::EDAM::NoteStore::NoteFilter.new(:notebookGuid => notebook.guid)
-      # Retrieve notes
-      @notebooks[notebook.guid] =   {:notebook => notebook,
-                                     :notelist => noteStore.findNotesMetadata(
-                                       access_token['evernote_token'], filter, 0, maxnotes, resultspec)
-                                    }
-    end
-    
-    #@notebooks = notebooks.map(&:name)
-    
-    # Generate the page
-    @header = "Embed a note"
-    erb :embed
-  else
-    # Send the user to Evernote for authorization
-    @header = "Authorization required"
-    erb :authorize
-  end
-end
-
-##
-# Post the assessment results
-# TODO: evaluate if we need this
-##
-post '/assessment' do
-  if session['launch_params']
-    key = session['launch_params']['oauth_consumer_key']
-  else
-    return show_error "The tool never launched"
-  end
-
-  @tp = IMS::LTI::ToolProvider.new(key, $oauth_creds[key], session['launch_params'])
-
-  if !@tp.outcome_service?
-    return show_error "This tool wasn't lunched as an outcome service"
-  end
-
-  # Post the given score to the TC
-  res = @tp.post_replace_result!(params['score'])
-
-  if res.success?
-    @score = params['score']
-    @tp.lti_msg = "Message shown when arriving back at Tool Consumer."
-    erb :assessment_finished
-  else
-    @tp.lti_errormsg = "The Tool Consumer failed to add the score."
-    show_error "Your score was not recorded: #{res.description}"
-  end
-end
-
-##
-# Generates the LTI tool configuration XML
-##
-get '/tool_config.xml' do
-  host = request.scheme + "://" + request.host_with_port
-  url = host + "/lti_tool"
-  tc = IMS::LTI::ToolConfig.new(:title => "Evernote LTI", :launch_url => url)
-  tc.description = "Evernote integration for the Canvas LMS"
-  tc.icon = "http://evernote-lti.herokuapp.com/favicon.ico"
-  
-  # Extended params for Canvas LTI editor buttons
-  editor_params = { "tool_id" => "evernote",
-                    "privacy_level" => "anonymous",
-                    "editor_button" => 
-                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                      "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
-                      "text" => "Evernote",
-                      "selection_width" => 690,
-                      "selection_height" => 530,
-                      "enabled" => true,  },
-                    "resource_selection" =>
-                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
-                      "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
-                      "text" => "Evernote",
-                      "selection_width" => 690,
-                      "selection_height" => 530,
-                      "enabled" => true,  } }
-  
-  tc.set_ext_params("canvas.instructure.com", editor_params)
-
-  headers 'Content-Type' => 'text/xml'
-  tc.to_xml(:indent => 2)
 end
 
 ##
@@ -285,6 +153,147 @@ def db_getToken(lmsID)
 end
 
 ##
+# Generates the index page
+##
+get '/' do
+  @header = "Evernote LTI"
+  erb :index
+end
+
+##
+# Generates the LTI tool configuration XML
+##
+get '/tool_config.xml' do
+  # Set LMS parameters
+  host = request.scheme + "://" + request.host_with_port
+  url = host + "/lti_tool"
+  tc = IMS::LTI::ToolConfig.new(:title => "Evernote LTI", :launch_url => url)
+  tc.description = "Evernote integration for the Canvas LMS"
+  
+  # Extended params for Canvas LTI editor buttons
+  editor_params = { "tool_id" => "evernote",
+                    "privacy_level" => "anonymous",
+                    "editor_button" => 
+                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                      "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
+                      "text" => "Evernote",
+                      "selection_width" => 690,
+                      "selection_height" => 530,
+                      "enabled" => true,  },
+                    "resource_selection" =>
+                    { "url" => "http://evernote-lti.herokuapp.com/lti_tool_embed",
+                      "icon_url" => "http://evernote-lti.herokuapp.com/favicon.ico",
+                      "text" => "Evernote",
+                      "selection_width" => 690,
+                      "selection_height" => 530,
+                      "enabled" => true,  } }
+  
+  tc.set_ext_params("canvas.instructure.com", editor_params)
+
+  # Set MIME headers and return page
+  headers 'Content-Type' => 'text/xml'
+  tc.to_xml(:indent => 2)
+end
+
+##
+# The url for launching the tool
+# It will verify the OAuth signature
+# TODO: evalute if we need this block at all
+##
+post '/lti_tool' do
+  authorize!
+
+  if @tp.outcome_service?
+    # It's a launch for grading
+    erb :assessment
+  else
+    # Normal tool launch without grade write-back
+    @tp.lti_msg = "Sorry that tool was so boring"
+    erb :boring_tool
+  end
+end
+
+##
+# Post the assessment results
+# TODO: evaluate if we need this
+##
+post '/assessment' do
+  if session['launch_params']
+    key = session['launch_params']['oauth_consumer_key']
+  else
+    return show_error "The tool never launched"
+  end
+
+  @tp = IMS::LTI::ToolProvider.new(key, $oauth_creds[key], session['launch_params'])
+
+  if !@tp.outcome_service?
+    return show_error "This tool wasn't lunched as an outcome service"
+  end
+
+  # Post the given score to the TC
+  res = @tp.post_replace_result!(params['score'])
+
+  if res.success?
+    @score = params['score']
+    @tp.lti_msg = "Message shown when arriving back at Tool Consumer."
+    erb :assessment_finished
+  else
+    @tp.lti_errormsg = "The Tool Consumer failed to add the score."
+    show_error "Your score was not recorded: #{res.description}"
+  end
+end
+
+##
+# Generate the page when launching from an editor button
+# TODO: rename to /lti_tool if we decide not to support non-editor launches
+##
+post '/lti_tool_embed' do
+  # Verify the launch parameters
+  authorize!
+
+  # Get access token from the database
+  access_token = db_getToken(params[:user_id])
+  
+  # Check if we have an active Evernote session
+  if access_token
+    # Access user's note store
+    noteStoreTransport = Thrift::HTTPClientTransport.new(access_token['evernote_notestoreurl'])
+    noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
+    noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
+    
+    # Create an empty hash for notebooks
+    @notebooks = Hash.new
+    
+    # Build a hash of Notebook objects containing Note objects
+    usernotebooks = noteStore.listNotebooks(access_token['evernote_token'])
+    # Only ask for the GUID and title from the Evernote servers
+    resultspec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new(:includeTitle => true)
+    # Get the max note count
+    maxnotes = Evernote::EDAM::Limits::EDAM_USER_NOTES_MAX
+    
+    usernotebooks.each() do |notebook|
+      # Filter for notes in this notebook
+      filter = Evernote::EDAM::NoteStore::NoteFilter.new(:notebookGuid => notebook.guid)
+      # Retrieve notes
+      @notebooks[notebook.guid] =   {:notebook => notebook,
+                                     :notelist => noteStore.findNotesMetadata(
+                                       access_token['evernote_token'], filter, 0, maxnotes, resultspec)
+                                    }
+    end
+    
+    #@notebooks = notebooks.map(&:name)
+    
+    # Generate the page
+    @header = "Embed a note"
+    erb :embed
+  else
+    # Send the user to Evernote for authorization
+    @header = "Authorization required"
+    erb :authorize
+  end
+end
+
+##
 # Reset the session
 # TODO: evaluate if we need this
 ##
@@ -318,6 +327,7 @@ end
 # temporary credentials for access token credentials
 ##
 get '/callback' do
+  # Ensure we have all necessary data
   if params['oauth_verifier'] and session[:launch_params]
     oauth_verifier = params['oauth_verifier']
 
