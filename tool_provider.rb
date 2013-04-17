@@ -282,9 +282,9 @@ get '/callback' do
       @header = "Authorization successful"
       erb :successful_auth
     rescue => e
-      show_error = e.message
+      show_error e.message
     end
   else
-    show_error = "Content owner did not authorize the temporary credentials"
+    show_error "Content owner did not authorize the temporary credentials"
   end
 end
