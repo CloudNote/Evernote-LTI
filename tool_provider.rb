@@ -53,6 +53,7 @@ EVERNOTE_SERVER = "https://sandbox.evernote.com"
 REQUEST_TOKEN_URL = "#{EVERNOTE_SERVER}/oauth"
 ACCESS_TOKEN_URL = "#{EVERNOTE_SERVER}/oauth"
 AUTHORIZATION_URL = "#{EVERNOTE_SERVER}/OAuth.action"
+USERSTORE_URL = "#{EVERNOTE_SERVER}/edam/user"
 NOTESTORE_URL_BASE = "#{EVERNOTE_SERVER}/edam/note/"
 
 ##
@@ -209,13 +210,22 @@ post '/lti_tool' do
     # Access user's note store
     noteStoreTransport = Thrift::HTTPClientTransport.new(access_token['evernote_notestoreurl'])
     noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
-    noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
+    @noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
+    
+    # Access Evernote's user store
+    userStoreTransport = Thrift::HTTPClientTransport.new(USERSTORE_URL)
+    userStoreProtocol = Thrift::BinaryProtocol.new(userStoreTransport)
+    userStore = Evernote::EDAM::UserStore::UserStore::Client.new(userStoreProtocol)
+    
+    # Get user's shard ID
+    shardId = userStore.getUser(access_token['evernote_token']).shardId
     
     # Create an empty hash for notebooks
     @notebooks = Hash.new
+    @noteurls = Hash.new
     
     # Build a hash of Notebook objects containing Note objects
-    usernotebooks = noteStore.listNotebooks(access_token['evernote_token'])
+    usernotebooks = @noteStore.listNotebooks(access_token['evernote_token'])
     # Only ask for the GUID and title from the Evernote servers
     resultspec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new(:includeTitle => true)
     # Get the max note count
@@ -226,9 +236,16 @@ post '/lti_tool' do
       filter = Evernote::EDAM::NoteStore::NoteFilter.new(:notebookGuid => notebook.guid)
       # Retrieve notes
       @notebooks[notebook.guid] =   {:notebook => notebook,
-                                     :notelist => noteStore.findNotesMetadata(
+                                     :notelist => @noteStore.findNotesMetadata(
                                        access_token['evernote_token'], filter, 0, maxnotes, resultspec)
                                     }
+      
+      # build URLs for each note
+      @notebooks[notebook.guid][:notelist].notes.each() do |note|
+        # Currently shares all notes on account!
+        # TODO: find a better method
+        @noteurls[note.guid] = "#{EVERNOTE_SERVER}/shard/#{shardId}/sh/#{note.guid}/#{@noteStore.shareNote(access_token['evernote_token'], note.guid)}"
+      end
     end
     
     #@notebooks = notebooks.map(&:name)
