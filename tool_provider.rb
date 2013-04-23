@@ -212,14 +212,6 @@ post '/lti_tool' do
     noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
     @noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
     
-    # Access Evernote's user store
-    userStoreTransport = Thrift::HTTPClientTransport.new(USERSTORE_URL)
-    userStoreProtocol = Thrift::BinaryProtocol.new(userStoreTransport)
-    userStore = Evernote::EDAM::UserStore::UserStore::Client.new(userStoreProtocol)
-    
-    # Get user's shard ID
-    shardId = userStore.getUser(access_token['evernote_token']).shardId
-    
     # Create an empty hash for notebooks
     @notebooks = Hash.new
     @noteurls = Hash.new
@@ -242,9 +234,7 @@ post '/lti_tool' do
       
       # build URLs for each note
       @notebooks[notebook.guid][:notelist].notes.each() do |note|
-        # Currently shares all notes on account!
-        # TODO: find a better method
-        @noteurls[note.guid] = "#{EVERNOTE_SERVER}/shard/#{shardId}/sh/#{note.guid}/#{@noteStore.shareNote(access_token['evernote_token'], note.guid)}"
+        @noteurls[note.guid] = "/share?user_id=#{params[:user_id]}&guid=#{note.guid}&returnurl=#{@tp.build_return_url}"
       end
     end
     
@@ -258,6 +248,31 @@ post '/lti_tool' do
     @header = "Authorization required"
     erb :authorize
   end
+end
+
+##
+# Shares a note
+##
+
+get '/share' do
+  access_token = db_getToken(params[:user_id])
+
+  # Access user's note store
+  noteStoreTransport = Thrift::HTTPClientTransport.new(access_token['evernote_notestoreurl'])
+  noteStoreProtocol = Thrift::BinaryProtocol.new(noteStoreTransport)
+  @noteStore = Evernote::EDAM::NoteStore::NoteStore::Client.new(noteStoreProtocol)
+  
+  # Access Evernote's user store
+  userStoreTransport = Thrift::HTTPClientTransport.new(USERSTORE_URL)
+  userStoreProtocol = Thrift::BinaryProtocol.new(userStoreTransport)
+  userStore = Evernote::EDAM::UserStore::UserStore::Client.new(userStoreProtocol)
+  
+  # Get user's shard ID
+  shardId = userStore.getUser(access_token['evernote_token']).shardId
+  
+  noteurl = "#{EVERNOTE_SERVER}/shard/#{shardId}/sh/#{params[:guid]}/#{@noteStore.shareNote(access_token['evernote_token'], params[:guid])}"
+  @redirecturl = "#{params[:returnurl]}?return_type=iframe&url=#{noteurl}&width=100%&height=500"
+  erb :share
 end
 
 ##

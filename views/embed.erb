@@ -3,7 +3,7 @@
     <li class="notebook"><%= notebook[:notebook].name %>
       <ul>
         <% notebook[:notelist].notes.each do |note| %>
-          <a href="<%= "#{@tp.build_return_url}?return_type=iframe&url=#{@noteurls[note.guid]}&width=100%&height=500&title=#{note.title}" %>">
+          <a href="<%= "#{@noteurls[note.guid]}" %>">
           <li class="note"><%= note.title %></li>
           </a>
         <% end %>
