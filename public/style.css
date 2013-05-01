@@ -1,18 +1,39 @@
 /* Header styles */
 
 header img {
-    padding-right: 10px;
+  padding-right: 10px;
+  vertical-align: middle;
 }
 
 /* List styles */
-li.notebook {
-    list-style-image: url('notepadicon.gif');
+.notebook {
+  list-style-image: url('notepadicon.gif');
 }
 
-li.note {
-    list-style-image: url('noteicon.png');
+.note {
+  list-style-image: url('noteicon.png');
 }
 
-li.note:hover {
-    background-color:GreenYellow;
+.note:hover {
+  background-color:GreenYellow;
+}
+
+a:link {
+  color: black;
+  text-decoration:none;
+}
+
+a:visited {
+  color: black;
+  text-decoration:none;
+}
+
+a:hover {
+  color: black;
+  text-decoration:none;
+}
+
+a:active {
+  color: black;
+  text-decoration:none;
 }
