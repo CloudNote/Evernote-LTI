@@ -89,7 +89,7 @@ def authorize!
   end
 
   # Ensure timestamp is valid
-  if Time.now.utc.to_i - @tp.request_oauth_timestamp.to_i > 60*60
+  if Time.now.utc.to_i - @tp.request_oauth_timestamp.to_i > 5*60
     return show_error "Your request is too old."
   end
 
@@ -113,7 +113,7 @@ end
 def was_nonce_used?(nonce)
   timestamp = settings.cache.get(nonce)
 
-  if(!(timestamp.nil?) && (timestamp.to_i < 300) )
+  if(!(timestamp.nil?) && (timestamp.to_i - Time.now.utc.to_i < 5*60) )
     return true # nonce recently used
   else
     return false
