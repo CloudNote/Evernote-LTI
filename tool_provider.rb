@@ -157,7 +157,20 @@ end
 ##
 get '/' do
   @header = "Evernote LTI"
+  @nav = true
   erb :index
+end
+
+get '/help' do
+  @header = "Getting Started"
+  @nav = true
+  erb :help
+end
+
+get '/docs' do
+  @header = "Documentation"
+  @nav = true
+  erb :docs
 end
 
 ##

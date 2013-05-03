@@ -1,21 +1,52 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="style.css">
-        <title><%= @header %></title>
-    </head>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <title><%= @header %></title>
+  </head>
     
-    <body>
-        <header>
-            <h1>
-                <img src="http://evernote.com/media/img/product_icons/evernote-75.png"/>
-                <%= @header %>
-            </h1>
-        </header>
-        
-        <hr>
-        
-        <section>
-            <%= yield %>
-        </section>
-    </body>
+  <body>
+    <!-- Logo and page title -->
+    <header>
+      <h1>
+        <img src="/evernote-75.png" alt="Evernote logo"/>
+        <%= @header %>
+      </h1>
+    
+    </header>
+    
+    <% if @nav %>
+    <!-- Navigation bar -->
+    <nav>
+      <ul>
+        <li>
+          <a href="/">Home</a>
+        </li>
+        <li>
+          <a href="/help">Getting Started</a>
+        </li>
+        <li>
+          <a href="/docs">Documentation</a>
+        </li>
+        <li>
+          <a href="/tool_config.xml">Tool Config XML</a>
+        </li>
+      </ul>
+    </nav>
+    <% else %>
+    <hr />
+    <% end %>
+    
+    <!-- Page content -->
+    <section>
+      <%= yield %>
+    </section>
+    
+    <!-- Page footer -->
+    <footer>
+      <hr />
+      Evernote and the logo above belong to The Evernote Corporation.
+    </footer>
+  </body>
 </html>

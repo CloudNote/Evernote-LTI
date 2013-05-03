@@ -1,3 +1,11 @@
+/* Body styles */
+body {
+  margin: 0 auto;
+  padding: 5px;
+  max-width: 800px;
+  height: 100%;
+}
+
 /* Header styles */
 
 header img {
@@ -5,9 +13,106 @@ header img {
   vertical-align: middle;
 }
 
-/* List styles */
+h1 {
+  margin: 0;
+}
+
+/* Navigation bar styles */
+
+nav ul {
+  padding: 0;
+  display: table;
+  table-layout: fixed;
+  height: 2em;
+  width: 100%;
+}
+
+nav ul li {
+  display: table-cell;
+  height: 2em;
+  line-height: 2em;
+  text-align: center;
+  background-color: #CAC21A;
+  border-right: 1px solid black;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  white-space: nowrap;
+}
+
+nav ul li:first-child {
+  border-left: 1px solid black;
+}
+
+nav ul li a:link {
+  color: black;
+  text-decoration: none;
+}
+
+nav ul li a:visited {
+  color: black;
+  text-decoration: none;
+}
+
+nav ul li a:hover {
+  color: gray;
+  text-decoration: none;
+}
+
+/* Footer styles */
+
+footer {
+  margin-top: 50px;
+  text-align: center;
+  font-size: .7em;
+  font-style: italic;
+}
+
+/* Table styles */
+
+table {
+  width: 750px;
+  table-layout: fixed;
+  margin: 20px auto;
+  border: 3px solid black;
+  border-collapse: collapse;
+}
+
+td, th {
+  text-align: center;
+  border: 1px solid black;
+}
+
+th {
+  background-color: #47A1BF;
+}
+
+table caption {
+  caption-side: bottom;
+  text-align: right;
+  font-size: 0.7em;
+}
+
+td:first-child {
+  font-weight: bold;
+  background-color: lightgray;
+}
+
+.td-yes {
+  background-color: #CAC21A;
+}
+
+.td-no {
+  background-color: #CA351A;
+}
+
+/* Embed page styles */
 .notebook {
   list-style-image: url('notepadicon.gif');
+}
+
+.notebook a:link, .notebook a:visited, .notebook a:hover, .notebook a:active {
+  color: black;
+  text-decoration:none;
 }
 
 .note {
@@ -15,25 +120,5 @@ header img {
 }
 
 .note:hover {
-  background-color:GreenYellow;
-}
-
-a:link {
-  color: black;
-  text-decoration:none;
-}
-
-a:visited {
-  color: black;
-  text-decoration:none;
-}
-
-a:hover {
-  color: black;
-  text-decoration:none;
-}
-
-a:active {
-  color: black;
-  text-decoration:none;
+  background-color: #CAC21A;
 }
