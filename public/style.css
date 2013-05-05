@@ -32,7 +32,7 @@ nav ul li {
   height: 2em;
   line-height: 2em;
   text-align: center;
-  background-color: #CAC21A;
+  background-color: #41D82D;
   border-right: 1px solid black;
   border-top: 1px solid black;
   border-bottom: 1px solid black;
@@ -67,44 +67,6 @@ footer {
   font-style: italic;
 }
 
-/* Table styles */
-
-table {
-  width: 750px;
-  table-layout: fixed;
-  margin: 20px auto;
-  border: 3px solid black;
-  border-collapse: collapse;
-}
-
-td, th {
-  text-align: center;
-  border: 1px solid black;
-}
-
-th {
-  background-color: #47A1BF;
-}
-
-table caption {
-  caption-side: bottom;
-  text-align: right;
-  font-size: 0.7em;
-}
-
-td:first-child {
-  font-weight: bold;
-  background-color: lightgray;
-}
-
-.td-yes {
-  background-color: #CAC21A;
-}
-
-.td-no {
-  background-color: #CA351A;
-}
-
 /* Embed page styles */
 .notebook {
   list-style-image: url('notepadicon.gif');
@@ -120,5 +82,5 @@ td:first-child {
 }
 
 .note:hover {
-  background-color: #CAC21A;
+  background-color: #41D82D;
 }
